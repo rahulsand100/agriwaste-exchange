@@ -1,0 +1,6 @@
+[
+  { "id": "b1", "name": "Sample Mushroom Farm", "type": "mushroom_farm", "accepts": ["rice_straw", "wheat_straw"], "demandTonnes": 5,  "lat": 30.3750, "lng": 76.2330 },
+  { "id": "b2", "name": "Sample Compost Unit",  "type": "compost_producer", "accepts": ["rice_straw", "corn_stalks", "wheat_straw"], "demandTonnes": 10, "lat": 30.3300, "lng": 76.2500 },
+  { "id": "b3", "name": "Sample Biomass Plant", "type": "biomass_plant", "accepts": ["rice_straw", "wheat_straw", "sugarcane_residue"], "demandTonnes": 50, "lat": 30.2100, "lng": 76.3900 },
+  { "id": "b4", "name": "Sample Biofuel Startup", "type": "biofuel", "accepts": ["sugarcane_residue", "corn_stalks"], "demandTonnes": 20, "lat": 30.4700, "lng": 76.3000 }
+]
