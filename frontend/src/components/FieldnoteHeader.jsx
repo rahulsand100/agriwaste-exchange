@@ -1,67 +1,8 @@
-import { useCallback, useState } from 'react';
-import FieldListingForm from './components/FieldListingForm.jsx';
-import MatchingResults from './components/MatchingResults.jsx';
-import NearbyMap from './components/NearbyMap.jsx';
-import { analyzeListing, requestPickup } from './services/listings.js';
+import { memo } from 'react';
 
-export default function App() {
-  const [result, setResult] = useState(null);
-  const [trace, setTrace] = useState([]);
-  const [pickup, setPickup] = useState(null);
-  const [mapLocation, setMapLocation] = useState('Nabha');
-  const [busy, setBusy] = useState(false);
-  const [requestError, setRequestError] = useState('');
-  const [acceptingMatch, setAcceptingMatch] = useState(null);
-  async function analyze(form) {
-    setBusy(true);
-    setRequestError('');
-    setPickup(null);
-    setMapLocation(form.location.trim());
-
-    try {
-      const data = await analyzeListing(form);
-      setResult(data);
-      setTrace(data.trace || []);
-    } catch (error) {
-      console.error('Listing analysis failed:', error);
-      setRequestError(error.message || 'Could not analyze this listing. Check your connection and try again.');
-    } finally {
-      setBusy(false);
-    }
-  }
-
-  const accept = useCallback(async (match) => {
-    setAcceptingMatch(match.id);
-    setRequestError('');
-
-    try {
-      const data = await requestPickup(match.id);
-      setPickup(data.pickup);
-      setTrace((currentTrace) => [...currentTrace, data.trace]);
-    } catch (error) {
-      console.error('Pickup request failed:', error);
-      setRequestError(error.message || 'Could not request this pickup. Check your connection and try again.');
-    } finally {
-      setAcceptingMatch(null);
-    }
-  }, []);
-
-  function clearPreviousResults() {
-    if (!result && !trace.length && !pickup && !requestError) return;
-    setResult(null);
-    setTrace([]);
-    setPickup(null);
-    setRequestError('');
-  }
-
-  const bestDistance = result?.matches?.[0]?.distanceKm ?? null;
-
+function FieldnoteHeader() {
   return (
-    <div className="app-shell">
-      <div className="orb orb-one" />
-      <div className="orb orb-two" />
-      <div className="orb orb-three" />
-
+    <>
       <header className="topbar panel glass-panel">
         <div>
           <p className="eyebrow"><span className="brand-mark" aria-hidden="true"><i /></span> KhetLoop <span className="brand-divider">/</span> AgriWaste Exchange</p>
@@ -74,14 +15,17 @@ export default function App() {
 
       <section className="showcase panel glass-panel">
         <div className="showcase-copy">
-          <p className="showcase-kicker">THE FIELDNOTE · 01 / NABHA, PUNJAB</p>
-          <h2>A good harvest leaves <em>nothing</em> behind.</h2>
-          <p className="showcase-description">Rice straw still has a journey after harvest. KhetLoop helps farmers find nearby buyers and plan what happens next.</p>
+          <p className="showcase-kicker"><span className="kicker-index">01</span> FIELDNOTE / NABHA, PUNJAB</p>
+          <h2>Let the harvest have a <em>second life.</em></h2>
+          <p className="showcase-description">A field-side exchange for crop leftovers. Find a nearby use for rice straw, wheat straw, and more.</p>
           <div className="showcase-tags">
-            <span><i>01</i> Describe what’s left</span>
-            <span><i>02</i> Find a nearby buyer</span>
-            <span><i>03</i> Plan the pickup</span>
+            <span><i>01</i> List residue</span>
+            <span><i>02</i> Meet local buyers</span>
+            <span><i>03</i> Arrange pickup</span>
           </div>
+          <a className="showcase-cta" href="#listing-form">
+            Start a field listing <span aria-hidden="true">↓</span>
+          </a>
 
           <div className="showcase-metrics">
             <div className="metric-card">
@@ -100,6 +44,15 @@ export default function App() {
         </div>
 
         <div className="showcase-scene" aria-hidden="true">
+          <div className="scene-coordinate">30°22' N <span>/</span> 76°09' E</div>
+          <div className="scene-glow" />
+          <div className="floating-sprig">
+            <span className="sprig-stem" />
+            <span className="sprig-leaf sprig-leaf-one" />
+            <span className="sprig-leaf sprig-leaf-two" />
+            <span className="sprig-leaf sprig-leaf-three" />
+            <span className="sprig-seed" />
+          </div>
           <div className="map-sheet">
             <div className="map-sheet-heading">
               <span>FIELD ROUTE / NABHA</span>
@@ -152,6 +105,7 @@ export default function App() {
             <span>FIELD STUDY</span>
             <b>01</b>
           </div>
+          <div className="scene-orbit-tag"><span /> RESIDUE → RESOURCE</div>
         </div>
       </section>
 
@@ -162,32 +116,8 @@ export default function App() {
         </div>
         <p>Share a few details. We’ll look for a useful local match.</p>
       </section>
-
-      <main className="dashboard-grid">
-        <FieldListingForm
-          busy={busy}
-          requestError={requestError}
-          onAnalyze={analyze}
-          onChange={clearPreviousResults}
-        />
-
-        <MatchingResults
-          result={result}
-          trace={trace}
-          pickup={pickup}
-          acceptingMatch={acceptingMatch}
-          onAccept={accept}
-        />
-      </main>
-
-      <NearbyMap location={mapLocation || 'Nabha'} />
-
-      {bestDistance && (
-        <div className="floating-stat panel glass-panel">
-          <span className="stat-label">Best route</span>
-          <strong>{bestDistance} km</strong>
-        </div>
-      )}
-    </div>
+    </>
   );
 }
+
+export default memo(FieldnoteHeader);
