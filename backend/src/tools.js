@@ -20,8 +20,8 @@ const USES = {
 };
 
 // TODO: replace the keyword heuristic with a Vision/LLM call when an image is supplied.
-export async function classifyWaste({ text = '', imageUrl }) {
-  const t = text.toLowerCase();
+export async function classifyWaste({ text = '', imageUrl } = {}) {
+  const t = String(text ?? '').toLowerCase();
   for (const [type, words] of Object.entries(KEYWORDS)) {
     if (words.some((w) => t.includes(w))) return { type, uses: USES[type], source: imageUrl ? 'image+text' : 'text' };
   }
@@ -33,10 +33,12 @@ export async function searchBuyerRequirements({ type }) {
 }
 
 export function geocode(location = '') {
-  return PLACES[location.trim().toLowerCase()] || null; // TODO: Google Maps / Nominatim
+  const key = String(location ?? '').trim().toLowerCase();
+  return key ? PLACES[key] || null : null; // TODO: Google Maps / Nominatim
 }
 
 export function calculateDistance(a, b) {
+  if (!a || !b || typeof a.lat !== 'number' || typeof a.lng !== 'number' || typeof b.lat !== 'number' || typeof b.lng !== 'number') return null;
   const R = 6371, rad = (d) => (d * Math.PI) / 180;
   const dLat = rad(b.lat - a.lat), dLng = rad(b.lng - a.lng);
   const h = Math.sin(dLat / 2) ** 2 + Math.cos(rad(a.lat)) * Math.cos(rad(b.lat)) * Math.sin(dLng / 2) ** 2;
@@ -44,10 +46,15 @@ export function calculateDistance(a, b) {
 }
 
 export function estimateValue({ type, quantityTonnes, distanceKm }) {
+  const qty = Number(quantityTonnes);
+  const kms = Number(distanceKm);
   const r = VALUE_RATES[type];
+  if (!Number.isFinite(qty) || qty <= 0 || !Number.isFinite(kms) || kms < 0) {
+    return { min: null, max: null, currency: 'INR', note: 'Invalid input: quantity and distance must be positive numbers' };
+  }
   if (!r || (r.min === 0 && r.max === 0)) return { min: null, max: null, currency: 'INR', note: 'Configure local rates in config.js' };
-  const transport = distanceKm * quantityTonnes * TRANSPORT_COST_PER_TONNE_KM;
-  return { min: Math.max(0, r.min * quantityTonnes - transport), max: Math.max(0, r.max * quantityTonnes - transport), currency: 'INR', note: 'Indicative only' };
+  const transport = kms * qty * TRANSPORT_COST_PER_TONNE_KM;
+  return { min: Math.max(0, r.min * qty - transport), max: Math.max(0, r.max * qty - transport), currency: 'INR', note: 'Indicative only' };
 }
 
 export function createMatch({ listing, buyer, distanceKm, value, score }) {

@@ -2,7 +2,11 @@ import { createMatch } from '../tools.js';
 import { MAX_RADIUS_KM } from '../config.js';
 // Score = demand fit (0..1) * proximity (0..1). Transparent, explainable weights.
 export async function matchingAgent(ctx) {
-  const q = ctx.input.quantityTonnes;
+  const q = Number(ctx.input.quantityTonnes);
+  if (!Number.isFinite(q) || q <= 0) {
+    ctx.trace.push({ agent: 'Matching Agent', status: 'failed', message: 'Invalid or zero quantity provided', tool: 'createMatch()' });
+    return { matches: [] };
+  }
   const matches = ctx.candidates.map((c) => {
     const fit = Math.min(1, c.buyer.demandTonnes / q);
     const proximity = 1 - c.distanceKm / MAX_RADIUS_KM;
