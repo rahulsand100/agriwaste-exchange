@@ -39,6 +39,7 @@ server.on('error', async (error) => {
       if (response.ok && health.ok) {
         console.log(`AgriWaste Exchange API is already running on :${port}`);
         return;
+        //rahul
       }
     } catch {
       // The port is occupied, but not by a responding AgriWaste API.
